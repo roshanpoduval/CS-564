@@ -1,0 +1,317 @@
+<?xml version="1.0"?>
+<pset>
+
+    <!--
+        CS 564, FALL 2020
+        PROBLEM SET 1 SUBMISSION TEMPLATE
+
+        Please copy and paste your SQL queries into the appropriate spots below. 
+
+        When submitting SQL queries, please do not include the initial 
+        %sql or %%sql IPython commands. Just include the SQL code.
+
+        DO NOT DELETE THE <![CDATA[ ... ]]> LINES IN EACH <answer> TAG!
+        Doing so will break the autograder. To avoid accidentally breaking
+        something, please leave all existing comments in this template
+        intact in your submission.
+    -->
+
+    <student>
+        <name>
+            <!-- Insert your full name on the line below. -->
+            Roshan Jayadevan Poduval
+        </name>
+        <netid>
+            <!-- Insert your NetID (NOT your student ID number!) below. -->
+		rpoduval@wisc.edu
+        </netid>
+        <studentid>
+            <!-- Insert your student ID number below. -->
+		9076702696
+        </studentid>
+    </student>
+
+
+    <!-- BEGIN PROBLEM 1 -->
+    <answer number="1a">
+        <!-- Paste your solution to problem 1, part (a) below this line. --><![CDATA[
+
+select A.j as i, A.i as j, A.val
+from A
+order by i
+;
+
+        ]]><!-- End problem 1, part (a). -->
+    </answer>
+    <answer number="1b">
+        <!-- Paste your solution to problem 1, part (b) below this line. --><![CDATA[
+
+select sum(ATEMP.val * BTEMP.val) as 'Dot Product'
+from (select * from A where j = 2) as ATEMP,
+     (select * from B where j = 1) as BTEMP
+where ATEMP.i = BTEMP.i
+;
+
+        ]]><!-- End problem 1, part (b). -->
+    </answer>
+    <answer number="1c">
+        <!-- Paste your solution to problem 1, part (c) below this line. --><![CDATA[
+
+select Atemp.i, Btemp.j, SUM(Atemp.val * Btemp.val) as val
+from A Atemp
+inner join B Btemp
+on Atemp.j = Btemp.i
+group by Atemp.i, Btemp.j
+;
+
+        ]]><!-- End problem 1, part (c). -->
+    </answer>
+    <answer number="1d">
+        <!-- Paste your solution to problem 1, part (d) below this line. --><![CDATA[
+
+select Atemp.i, Btemp.j, SUM(Atemp.val * Btemp.val) as val
+from (select Atemp.i, Btemp.j, SUM(Atemp.val * Btemp.val) as val
+        from A Atemp
+        inner join A Btemp
+        on Atemp.j = Btemp.i
+        group by Atemp.i, Btemp.j) Atemp
+inner join A Btemp
+on Atemp.j = Btemp.i
+group by Atemp.i, Btemp.j
+;
+
+        ]]><!-- End problem 1, part (d). -->
+    </answer>
+    <!-- END PROBLEM 1 -->
+
+
+    <!-- BEGIN PROBLEM 2 -->
+    <answer number="2a">
+        <!-- Paste your solution to problem 2, part (a) below this line. --><![CDATA[
+
+with temp AS (
+    select holSales.store, SUM(holSales.weeklysales) as 'Allsales'
+        from (select sales.*
+                from Sales sales,
+                     Holidays hol
+                where sales.WeekDate = hol.WeekDate and hol.IsHoliday = 'TRUE') holSales
+        group by holSales.store)
+select temp.store, max(temp.Allsales) as 'AllSales' from temp
+union all
+select temp.store, min(temp.Allsales) as 'AllSales' from temp
+;
+
+        ]]><!-- End problem 2, part (a). -->
+    </answer>
+    <answer number="2b">
+        <!-- Paste your solution to problem 2, part (b) below this line. --><![CDATA[
+
+with holSales AS (
+    select sales.*
+    from Sales sales,
+         Holidays hol
+    where sales.WeekDate = hol.WeekDate and hol.IsHoliday = 'TRUE'),
+nonHolSales AS (
+    select sales.*
+    from Sales sales,
+         Holidays hol
+    where sales.WeekDate = hol.WeekDate and hol.IsHoliday = 'FALSE'),
+whst AS (
+    select holSales.WeekDate, sum(holSales.weeklysales) as 'WeeklyTotal'
+            from holSales
+    group by holSales.WeekDate),
+whavg AS (
+    select avg(whst.WeeklyTotal) as 'average'
+    from whst),
+wst AS (
+    select nonHolSales.store, nonHolSales.WeekDate, sum(nonHolSales.weeklysales) as 'WeeklyStoreTotal'
+            from nonHolSales
+    group by nonHolSales.store, nonHolSales.WeekDate),
+wt AS (
+    select wst.WeekDate, SUM(wst.WeeklyStoreTotal) as 'weeksum'
+    from wst
+    group by wst.WeekDate)
+select count(*) as 'NumNonHolidays'
+from whavg, wt
+where wt.weeksum > whavg.average
+;
+
+        ]]><!-- End problem 2, part (b). -->
+    </answer>
+    <answer number="2c">
+        <!-- Paste your solution to problem 2, part (c) below this line. --><![CDATA[
+
+with store_sales AS (
+    select sales.store, sales.WeekDate, sum(sales.weeklysales) as 'sales'
+    from Sales sales
+    where sales.WeekDate like '%-06-%' or
+          sales.WeekDate like '%-07-%' or
+          sales.WeekDate like '%-08-%'
+    group by sales.store),
+storetype_sales AS (
+    select store_sales.store, stores.type, store_sales.sales
+    from store_sales, Stores stores
+    where store_sales.store = stores.store)
+select storetype_sales.type, sum(storetype_sales.sales)
+from storetype_sales
+group by storetype_sales.type
+;
+
+        ]]><!-- End problem 2, part (c). -->
+    </answer>
+    <answer number="2d">
+        <!-- Paste your solution to problem 2, part (d) below this line. --><![CDATA[
+
+drop table if exists results;
+create table results (
+    AttributeName VARCHAR(20),
+    CorrelationSign Integer
+);
+drop table if exists temp_comp;
+create table temp_comp AS
+    with dataset AS (
+        with sum_sales_across_dept AS (
+            select sales.Store, sales.WeekDate, sum(sales.WeeklySales) as 'ws'
+            from Sales sales
+            group by sales.Store, sales.WeekDate)
+        select meta.Store, meta.WeekDate, ssad.ws, meta.Temperature, meta.FuelPrice, meta.CPI, meta.UnemploymentRate
+        from sum_sales_across_dept ssad, TemporalData meta
+        where ssad.Store = meta.Store and ssad.WeekDate = meta.WeekDate),
+    store_avgs AS (
+        select
+               avg(ds.ws) as 'avg_ws',
+               avg(ds.Temperature) as 'avg_temp',
+               avg(ds.FuelPrice) as 'avg_fp',
+               avg(ds.CPI) as 'avg_cpi',
+               avg(ds.UnemploymentRate) as 'avg_ur'
+        from dataset ds),
+    computation AS (
+    select sum((ds.Temperature-sa.avg_temp)*(ds.ws-sa.avg_ws)) as 'nt',
+           sum((ds.FuelPrice-sa.avg_fp)*(ds.ws-sa.avg_ws)) as 'nfp',
+           sum((ds.CPI-sa.avg_cpi)*(ds.ws-sa.avg_ws)) as 'ncpi',
+           sum((ds.UnemploymentRate-sa.avg_ur)*(ds.ws-sa.avg_ws)) as 'nur'
+    from store_avgs sa, dataset ds)
+    select * from computation
+;
+insert into results
+    select
+    'Temperature' as 'AttributeName',
+    case
+        when t.nt > 0 then 1
+        when t.nt < 0 then -1
+        else 0
+        END CorrelationSign
+from temp_comp t;
+insert into results
+    select
+    'FuelPrice' as 'AttributeName',
+    case
+        when t.nfp > 0 then 1
+        when t.nfp < 0 then -1
+        else 0
+        END CorrelationSign
+from temp_comp t;
+insert into results
+    select
+    'CPI' as 'AttributeName',
+    case
+        when t.ncpi > 0 then 1
+        when t.ncpi < 0 then -1
+        else 0
+        END CorrelationSign
+from temp_comp t;
+insert into results
+    select
+    'UnemploymentRate' as 'AttributeName',
+    case
+        when t.nur > 0 then 1
+        when t.nur < 0 then -1
+        else 0
+        END CorrelationSign
+from temp_comp t;
+select * from results;
+
+        ]]><!-- End problem 2, part (d). -->
+    </answer>
+    <!-- END PROBLEM 2 -->
+
+
+    <!-- BEGIN PROBLEM 3 -->
+    <answer number="3a">
+        <!-- Paste your solution to problem 3, part (a) below this line. --><![CDATA[
+
+select s1.B as 'company', (s1.d) as 'distance'
+from streets s1
+where s1.A = 'UW-Madison' and s1.d <= 10
+union all
+select s2.B as 'company', (s1.d + s2.d) as 'distance'
+from streets s1, streets s2
+where s1.A = 'UW-Madison' and s1.B = s2.A and (s1.d + s2.d) <= 10
+union all
+select s3.B as 'company', (s1.d + s2.d + s3.d) as 'distance'
+from streets s1, streets s2, streets s3
+where s1.A = 'UW-Madison' and s1.B = s2.A and s2.B = s3.A and (s1.d + s2.d + s3.d) <= 10
+;
+
+        ]]><!-- End problem 3, part (a). -->
+    </answer>
+    <answer number="3b">
+        <!-- Paste your solution to problem 3, part (b) below this line. --><![CDATA[
+
+drop view if exists madison_close;
+create view madison_close AS
+    select distinct s1.A as 'A', s1.B as 'B', s1.d as 'd'
+    from streets s1
+    where s1.A != 'UW-Madison' and s1.B = 'UW-Madison' and s1.d <= 15
+    union all
+    select distinct s1.A as 'A', s2.B as 'B', (s1.d + s2.d) as 'd'
+    from streets s1, streets s2
+    where s1.B = s2.A and s1.A != 'UW-Madison' and s1.B != 'UW-Madison' and s2.A != 'UW-Madison' and s2.B = 'UW-Madison' and (s1.d + s2.d) <= 15
+    union all
+    select distinct s1.A as 'A', s3.B as 'B', (s1.d + s2.d + s3.d) as 'd'
+    from streets s1, streets s2, streets s3
+    where s1.B = s2.A and s2.B = s3.A and s2.B != s1.A and s1.A != 'UW-Madison' and s1.B != 'UW-Madison' and s2.A != 'UW-Madison' and s2.B != 'UW-Madison' and s3.A != 'UW-Madison' and s3.B = 'UW-Madison' and (s1.d + s2.d + s3.d) <= 15
+;
+select distinct c1.A as 'company_1', c2.A as 'company_2', (c1.d + c2.d) as 'distance'
+from madison_close c1, madison_close c2
+where c1.A != c2.A and c1.A != 'UW-Madison' and c1.B = 'UW-Madison' and c2.A != 'UW-Madison' and c2.B = 'UW-Madison' and (c1.d + c2.d) <= 15
+order by distance
+;
+
+        ]]><!-- End problem 3, part (b). -->
+    </answer>
+    <answer number="3c">
+        <!-- Paste your solution to problem 3, part (c) below this line. --><![CDATA[
+
+delete from streets
+where id in (
+    select s1.id
+    from streets s1, streets s2, streets s3
+    where s1.B = s2.A and s2.B = s3.A and s3.B = s1.A
+    limit 1)
+;
+
+        ]]><!-- End problem 3, part (c). -->
+    </answer>
+    <answer number="3d">
+        <!-- Paste your solution to problem 3, part (d) below this line. --><![CDATA[
+
+with recursive
+    longestboi(A, B, distance, start) as (
+        select s.A, s.B, s.d, s.A
+        from streets s
+        union
+        select s2.A, s2.B, s2.d + lb.distance, lb.start
+        from streets s2, longestboi lb
+        where s2.A = lb.B and not s2.B = lb.A and not lb.start = s2.B)
+select lb.start as 'A', lb.B, lb.distance
+from longestboi lb
+order by lb.distance desc
+limit 1;
+
+        ]]><!-- End problem 3, part (d). -->
+    </answer>
+    <!-- END PROBLEM 3 -->
+
+
+</pset>

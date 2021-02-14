@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+<pset>
+
+    <!--
+        CS 564, Fall 2020
+        PROBLEM SET 2 SUBMISSION TEMPLATE
+
+        Please copy and paste your SQL queries (and potentially Python and Latex code) 
+	into the appropriate spots below. 
+
+        When submitting SQL queries, please do not include the intitial 
+        %sql or %%sql IPython commands. Just include the SQL code.
+
+        DO NOT DELETE THE <![CDATA[ ... ]]> LINES IN EACH <answer> TAG!
+        Doing so will break the autograder. To avoid accidentally breaking
+        something, please leave all existing comments in this template
+        intact in your submission.
+    -->
+
+    <student>
+        <name>
+            <!-- Insert your full name on the line below. -->
+            Roshan Poduval
+        </name>
+        <netid>
+            <!-- Insert your NetID (NOT your student ID number!) below. -->
+            rpoduval
+        </netid>
+        <studentid>
+            <!-- Insert your student ID number below. -->
+            9076702696
+        </studentid>
+    </student>
+
+
+    <!-- BEGIN PROBLEM 1 -->
+    <answer number="1a">
+        <!-- Paste your solution to problem 1, part (a) below this line. --><![CDATA[
+
+with counts as (
+    select count(h.provider) as 'count', h.provider
+    from hospital h
+    group by h.provider),
+result as (
+    select max(c.count) as 'max'
+    from counts c)
+select *
+from counts c
+where count > 1
+;
+
+        ]]><!-- End problem 1, part (a). -->
+    </answer>
+    <answer number="1b">
+        <!-- Paste your solution to problem 1, part (b) below this line. --><![CDATA[
+
+with zcs as (
+    select h.zip, h.city, h.state
+    from hospital h),
+zz as (
+    select tmp.zip
+    from zcs tmp),
+cs as (
+    select tmp.city, tmp.state
+    from zcs tmp),
+zzcount as (
+    select count(*) as 'count'
+    from zz),
+cscount as (
+    select count(*) as 'count'
+    from cs)
+select *
+from zzcount, cscount
+where zzcount.count != cscount.count
+;
+
+        ]]><!-- End problem 1, part (b). -->
+    </answer>
+    <!-- END PROBLEM 1 -->
+
+
+    <!-- BEGIN PROBLEM 2 -->
+    <answer number="2a">
+        <!-- Paste your solution to problem 2, part (a) below this line. --><![CDATA[
+
+answer = True
+explanation = "Closure of A, B yields all attributes of relation S."
+
+        ]]><!-- End problem 2, part (a). -->
+    </answer>
+    <answer number="2b">
+        <!-- Paste your solution to problem 2, part (b) below this line. --><![CDATA[
+
+answer = False
+explanation = "Chase algorithm ends with no rows having all subscripts"
+
+        ]]><!-- End problem 2, part (b). -->
+    </answer>    
+    <answer number="2c">
+        <!-- Paste your solution to problem 2, part (c) below this line. --><![CDATA[
+
+answer = False
+explanation = "A -> D and D -> F are not preserved."
+
+        ]]><!-- End problem 2, part (c). -->
+    </answer>
+    <answer number="2d">
+        <!-- Paste your solution to problem 2, part (d) below this line. --><![CDATA[
+
+answer = True
+explanation = "Closure of A is C, D, E, and F, so {A} -> {E, F} is implied."
+
+        ]]><!-- End problem 2, part (d). -->
+    </answer>
+    <answer number="2e">
+        <!-- Paste your solution to problem 2, part (e) below this line. --><![CDATA[
+
+answer = False
+explanation = "Neither A nor D are superkeys for the relation S."
+
+        ]]><!-- End problem 2, part (e). -->
+    </answer>
+    <!-- END PROBLEM 2 -->
+
+    <!-- BEGIN PROBLEM 3 -->
+    <answer number="3a">
+        <!-- Paste your solution to problem 3, part (a) below this line. --><![CDATA[
+
+$$\pi_{name}(\sigma_{affiliation="UW-Madison"}(\pi_{aid}(\sigma_{year=2019}(Article))\bowtie Author)\bowtie\pi_{pid, name, affiliation}(Person)))$$
+
+        ]]><!-- End problem 3, part (a). -->
+    </answer>
+    <answer number="3b">
+        <!-- Paste your solution to problem 3, part (b) below this line. --><![CDATA[
+
+$$S_1 = \pi_{pid}(\sigma_{name="John Doe"}(Person))\bowtie Author \\
+S_2 = \rho_{pid=npid, aid=aid}(\pi_{pid}(\sigma_{name\neq"John Doe"}(Person))\bowtie Author) \\
+\pi_{name}(\rho_{pid}(\pi_{npid}(S_1 \bowtie S_2)) \bowtie Person)$$
+
+        ]]><!-- End problem 3, part (b). -->
+    </answer>
+    <answer number="3c">
+        <!-- Paste your solution to problem 3, part (c) below this line. --><![CDATA[
+
+$$\gamma_{COUNT(aid)}(\pi_{aid}(\pi_{pid}(\sigma_{name="John Doe"}(Person))\bowtie Author)\bowtie \sigma_{year \geq 2010 AND year \leq 2020}(Article))$$
+
+        ]]><!-- End problem 3, part (c). -->
+    </answer>
+    <answer number="3d">
+    <!-- Paste your solution to problem 3, part (d) below this line. --><![CDATA[
+
+$$S_1 = \pi_{pid}(\pi_{aid}(\sigma_{year=2018}(\pi_{confid}(\sigma_{name="SIGMOD"}(Conference)) \bowtie Article)) \bowtie Author) \\
+S_2 = \pi_{pid}(\pi_{aid}(\sigma_{year=2019}(\pi_{confid}(\sigma_{name="SIGMOD"}(Conference)) \bowtie Article)) \bowtie Author) \\
+S_1 - S_2$$
+
+        ]]><!-- End problem 3, part (d). -->
+    </answer>
+    <!-- END PROBLEM 3 -->
+
+</pset>
